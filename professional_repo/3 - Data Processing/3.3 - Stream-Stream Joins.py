@@ -7,6 +7,12 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC **In this notebook we are going to see how to use CDF data to propagate changes to downstream tables**
+# MAGIC - We will create a new silver table called customers_orders by joining two streams.
+
+# COMMAND ----------
+
 # MAGIC %run ../Includes/Copy-Datasets
 
 # COMMAND ----------
@@ -84,4 +90,4 @@ process_customers_orders()
 
 # MAGIC %sql
 # MAGIC SELECT count(*) FROM customers_orders
-
+# MAGIC

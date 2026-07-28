@@ -19,6 +19,11 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC **with static data we can use 'dropDuplicates' to drop duplicate records.**
+
+# COMMAND ----------
+
 from pyspark.sql import functions as F
 
 json_schema = "order_id STRING, order_timestamp Timestamp, customer_id STRING, quantity BIGINT, total BIGINT, books ARRAY<STRUCT<book_id STRING, quantity BIGINT, subtotal BIGINT>>"
@@ -36,6 +41,16 @@ print(batch_total)
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC - In spark structured streaming we can also use dropDuplicates function, to ensure no duplicate records are present.
+# MAGIC - StructuredStreaming can track state information for the unique keys in the data.
+# MAGIC - This ensures duplicate records do not exist within or between microbatches.
+# MAGIC - However, overtime, this state information will scale to represent all history.
+# MAGIC - We can limit the amount of the state to be maintained by using watermarking.
+# MAGIC - **Watermarking allows to only track state information for a window of time in which we expect records could be delayed**
+
+# COMMAND ----------
+
 deduped_df = (spark.readStream
                    .table("bronze")
                    .filter("topic = 'orders'")
@@ -46,11 +61,19 @@ deduped_df = (spark.readStream
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC - When dealing with streaming duplication, there is another level of complexity compared to static data as each micro-batch is processed.
+# MAGIC - We need also to ensure that records to be inserted are not already in the target table.
+# MAGIC - We can achieve this using insert only merge. This is ideal for de-duplication.
+# MAGIC - It defines logic to match on unique keys and only insert those records for keys that do not exist in the table.
+
+# COMMAND ----------
+
 def upsert_data(microBatchDF, batch):
     microBatchDF.createOrReplaceTempView("orders_microbatch")
     
     sql_query = """
-      MERGE INTO orders_silver a
+      MERGE INTO dbcertification.udemydata.orders_silver a
       USING orders_microbatch b
       ON a.order_id=b.order_id AND a.order_timestamp=b.order_timestamp
       WHEN NOT MATCHED THEN INSERT *
@@ -63,7 +86,7 @@ def upsert_data(microBatchDF, batch):
 
 # MAGIC %sql
 # MAGIC
-# MAGIC CREATE TABLE IF NOT EXISTS orders_silver
+# MAGIC CREATE TABLE IF NOT EXISTS dbcertification.udemydata.orders_silver
 # MAGIC (order_id STRING, order_timestamp Timestamp, customer_id STRING, quantity BIGINT, total BIGINT, books ARRAY<STRUCT<book_id STRING, quantity BIGINT, subtotal BIGINT>>)
 
 # COMMAND ----------

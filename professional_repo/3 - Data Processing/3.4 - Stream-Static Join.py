@@ -7,6 +7,11 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC - In this notebook we will create the silver table `books_sales` by joining the **orders_silver** **streaming** table with **current_books** **static** table
+
+# COMMAND ----------
+
 # MAGIC %run ../Includes/Copy-Datasets
 
 # COMMAND ----------
@@ -46,6 +51,11 @@ process_books_sales()
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC - propagating data only to static table
+
+# COMMAND ----------
+
 bookstore.load_new_data()
 bookstore.process_bronze()
 bookstore.process_books_silver()
@@ -68,4 +78,4 @@ process_books_sales()
 
 # MAGIC %sql
 # MAGIC SELECT count(*) FROM books_sales
-
+# MAGIC

@@ -11,6 +11,12 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC **Point of focus this notebook : books_silver table**
+# MAGIC - The idea is to keep track of all price modifications of a book, so we can verify our orders total amount at any given time.
+
+# COMMAND ----------
+
 # MAGIC %sql
 # MAGIC -- NOTE: This cell contains the SQL query for your reference, and won't work if run directly.
 # MAGIC -- The query is used below in the type2_upsert() function as part of the foreachBatch call.
@@ -65,7 +71,7 @@ def type2_upsert(microBatchDF, batch):
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE TABLE IF NOT EXISTS books_silver
+# MAGIC CREATE TABLE IF NOT EXISTS dbcertification.udemydata.books_silver
 # MAGIC (book_id STRING, title STRING, author STRING, price DOUBLE, current BOOLEAN, effective_date TIMESTAMP, end_date TIMESTAMP)
 
 # COMMAND ----------
@@ -115,6 +121,11 @@ display(books_df)
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC **We will create this table using batch overwrite logic using CREATE Or Replace Table Syntax**
+
+# COMMAND ----------
+
 # MAGIC %sql
 # MAGIC CREATE OR REPLACE TABLE current_books
 # MAGIC AS SELECT book_id, title, author, price
@@ -127,4 +138,4 @@ display(books_df)
 # MAGIC SELECT *
 # MAGIC FROM current_books
 # MAGIC ORDER BY book_id
-
+# MAGIC

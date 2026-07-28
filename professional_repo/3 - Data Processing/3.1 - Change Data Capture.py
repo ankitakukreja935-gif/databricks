@@ -7,6 +7,14 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC - We will create Customers_Silver table in this notebook.
+# MAGIC - The data in the customer's topic contains complete row output from a Change Data Capture Feed.
+# MAGIC - Changes captured are either insert, update or delete
+# MAGIC - We will process insert and update alone in this notebook
+
+# COMMAND ----------
+
 # MAGIC %run ../Includes/Copy-Datasets
 
 # COMMAND ----------
@@ -25,14 +33,24 @@ display(customers_df)
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC **CDC Fields :** `row_status` and `row_time`
+
+# COMMAND ----------
+
 from pyspark.sql.window import Window
 
 window = Window.partitionBy("customer_id").orderBy(F.col("row_time").desc())
 
-ranked_df = (customers_df.withColumn("rank", F.rank().over(window))
+ranked_df = (customers_df.withColumn("rank", F.rank().over(window)) 
                           .filter("rank == 1")
                           .drop("rank"))
 display(ranked_df)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Lets apply same logic to Streaming Read
 
 # COMMAND ----------
 
@@ -47,7 +65,7 @@ ranked_df = (spark.readStream
                    .filter("rank == 1")
                    .drop("rank")
              )
-
+ 
 (ranked_df.writeStream
             .option("checkpointLocation", f"{bookstore.checkpoint_path}/ranked")
             .trigger(availableNow=True)

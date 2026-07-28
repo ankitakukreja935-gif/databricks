@@ -13,7 +13,7 @@
 
 # MAGIC %sql
 # MAGIC SELECT cast(key AS STRING), cast(value AS STRING)
-# MAGIC FROM bronze
+# MAGIC FROM dbcertification.udemydata.bronze
 # MAGIC LIMIT 20
 
 # COMMAND ----------
@@ -22,14 +22,19 @@
 # MAGIC SELECT v.*
 # MAGIC FROM (
 # MAGIC   SELECT from_json(cast(value AS STRING), "order_id STRING, order_timestamp Timestamp, customer_id STRING, quantity BIGINT, total BIGINT, books ARRAY<STRUCT<book_id STRING, quantity BIGINT, subtotal BIGINT>>") v
-# MAGIC   FROM bronze
+# MAGIC   FROM dbcertification.udemydata.bronze
 # MAGIC   WHERE topic = "orders")
 
 # COMMAND ----------
 
 (spark.readStream
-      .table("bronze")
-      .createOrReplaceTempView("bronze_tmp"))
+      .table("dbcertification.udemydata.bronze")
+      .createOrReplaceTempView("bronze _tmp"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ##### `'from_json'` takes a single column that contains a JSON-formatted string and parses it into complex SparkSQL data type : StructType, ArrayType, or MapType
 
 # COMMAND ----------
 
@@ -61,9 +66,14 @@ query = (spark.table("orders_silver_tmp")
                .writeStream
                .option("checkpointLocation", f"{bookstore.checkpoint_path}/orders_silver")
                .trigger(availableNow=True)
-               .table("orders_silver"))
+               .table("dbcertification.udemydata.orders_silver"))
 
 query.awaitTermination()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Alternative Approach to read and write both using upstream and write to downstream using PySpark API
 
 # COMMAND ----------
 
@@ -71,20 +81,20 @@ from pyspark.sql import functions as F
 
 json_schema = "order_id STRING, order_timestamp Timestamp, customer_id STRING, quantity BIGINT, total BIGINT, books ARRAY<STRUCT<book_id STRING, quantity BIGINT, subtotal BIGINT>>"
 
-query = (spark.readStream.table("bronze")
+query = (spark.readStream.table("dbcertification.udemydata.bronze")
         .filter("topic = 'orders'")
         .select(F.from_json(F.col("value").cast("string"), json_schema).alias("v"))
         .select("v.*")
      .writeStream
         .option("checkpointLocation", f"{bookstore.checkpoint_path}/orders_silver")
         .trigger(availableNow=True)
-        .table("orders_silver"))
+        .table("dbcertification.udemydata.orders_silver"))
 
 query.awaitTermination()
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT *
+# MAGIC SELECT count(*)
 # MAGIC FROM orders_silver
-
+# MAGIC

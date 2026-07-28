@@ -7,6 +7,12 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC In this notebook, we are going to give a quick overview of how stored views and materialized views can be created in databricks.
+# MAGIC - Two Gold Layer entities will be created : countries_stats_vw, authors_stats
+
+# COMMAND ----------
+
 # MAGIC %run ../Includes/Copy-Datasets
 
 # COMMAND ----------
@@ -44,11 +50,11 @@ query = (spark.readStream
                  .trigger(availableNow=True)
                  .table("authors_stats")
             )
-
+ 
 query.awaitTermination()
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC SELECT * FROM authors_stats
-
+# MAGIC
