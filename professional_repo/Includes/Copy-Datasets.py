@@ -298,9 +298,9 @@ class CourseDataset:
 # COMMAND ----------
 
 data_source_uri = "s3://dalhussein-courses/DE-Pro/datasets/bookstore/v1/"
-db_name = "bookstore_eng_pro"
+db_name = "udemydata"
 
-data_catalog = spark.sql("SELECT current_catalog()").collect()[0][0]
+data_catalog = "dbcertification"
 bookstore = CourseDataset(data_source_uri, data_catalog, db_name)
 
 bookstore.create_database()
